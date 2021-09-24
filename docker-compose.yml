@@ -1,0 +1,46 @@
+version: "3"
+
+networks:
+  nodejs:
+    driver: bridge
+
+services:
+  starwar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: starwar_app
+    environment:
+      NODE_ENV: "${NODE_ENV}"
+      DB_HOST: pgsql
+      DB_PASSWORD: "${DB_PASSWORD}"
+      PORT: 3200
+    ports:
+      - 3200:3200
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - pgsql
+    networks:
+      - nodejs
+
+  pgsql:
+    image: postgres:12.3
+    container_name: starwar_pgsql
+    environment:
+      POSTGRES_USER: "${DB_USER}"
+      POSTGRES_PASSWORD: "${DB_PASSWORD}"
+      POSTGRES_DB: "${DB_DATABASE}"
+      SERVICE_TAGS: dev
+      SERVICE_NAME: pgsql
+    ports:
+      - "54321:5432"
+    volumes:
+      - ./dbdata:/var/lib/pgsql
+    networks:
+      - nodejs
+
+volumes:
+  dbdata:
+    driver: local
